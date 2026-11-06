@@ -1,33 +1,37 @@
+import Hero from "@/components/Hero/Hero";
+import { useCoords } from "@/hooks/useCoords";
 import { useForecast } from "@/hooks/useForecast";
-import { getCoords } from "@/location";
-import { getWeatherByCoords } from "@/weather";
-import { useEffect } from "react";
+import { ForecastQuery } from "@/weather";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function Index() {
-  const state = useForecast("Челябинск");
+const DEFAULT_CITY = 'Челябинск'
 
-  useEffect(() => {
-    getCoords()
-    .then((value) => {
-      getWeatherByCoords(value)
-      .then(console.log)
-    })
-  }, [])
+export default function Index() {
+  let query: ForecastQuery | null;
+  const coords = useCoords()
+
+  switch (coords.status) {
+    case "loading": 
+      query = null
+      break
+    case "notFound":
+    case "error":
+      query = { type: 'city', city: DEFAULT_CITY }
+      break
+    case "success":
+      query = { type: 'coords', coords: coords.data }
+  }
+
+  const state = useForecast(query)
 
   switch (state.status) {
-    case "loading":
-      return <Text>Loading...</Text>;
-    case "notFound":
-      return <Text>City wasn't found</Text>;
-    case "error":
-      return <Text>{state.message}</Text>;
+    case "loading": return <Text>Loading...</Text>;
+    case "notFound": return <Text>City wasn't found</Text>;
+    case "error": return <Text>{state.message}</Text>;
   }
 
   return (
-    <View style={styles.container}>
-      <Text>{state.data.list[0].main.temp}</Text>
-    </View>
+    <Hero data={state.data} />
   );
 }
 

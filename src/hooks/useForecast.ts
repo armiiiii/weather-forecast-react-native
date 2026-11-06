@@ -1,22 +1,20 @@
-import { getWeatherByCity, OwmForecastResponse } from "@/weather";
+import { RequestState } from "@/utils";
+import { ForecastQuery, OwmForecastResponse, getWeather } from "@/weather";
 import { useEffect, useState } from "react";
-
-type RequestState<T> =
-  | { status: "loading" }
-  | { status: "success"; data: T }
-  | { status: "notFound" }
-  | { status: "error"; message: string };
-
+  
 type State = RequestState<OwmForecastResponse>
 
-export function useForecast(city: string): State {
+export function useForecast(query: ForecastQuery | null): State {
   const [state, setState] = useState<State>({status: "loading"})
 
+  const key = query ? JSON.stringify(query) : null;
+
   useEffect(() => {
+    if (!query) return
+
     let cancelled = false
-
-    getWeatherByCity(city)
-
+    
+    getWeather(query)
     .then((response) => {
       if (cancelled) return
       if (response === null) { 
@@ -25,11 +23,13 @@ export function useForecast(city: string): State {
       }
       setState({status: 'success', data: response})
     })
-    
-    .catch((e) => setState({status: 'error', message: e.message}))
+    .catch((e) => { 
+      if (cancelled) return  
+      setState({status: 'error', message: e.message})
+    })
 
     return () => { cancelled = true }
-  }, [city])
+  }, [key])
 
   return state
 }

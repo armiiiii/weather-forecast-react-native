@@ -111,3 +111,12 @@ export async function getWeatherByCoords(coords: Coords): Promise<OwmForecastRes
   
   return await response.json() as OwmForecastResponse
 }
+
+export type ForecastQuery =
+  | { type: "city"; city: string }
+  | { type: "coords"; coords: Coords };
+
+export async function getWeather(query: ForecastQuery) {
+  if (query.type === 'city') return await getWeatherByCity(query.city)
+  return await getWeatherByCoords(query.coords)
+}
