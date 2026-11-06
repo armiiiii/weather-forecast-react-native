@@ -1,13 +1,27 @@
 import { useForecast } from "@/hooks/useForecast";
-import { Text, View, StyleSheet } from "react-native";
+import { getCoords } from "@/location";
+import { getWeatherByCoords } from "@/weather";
+import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
-  const state = useForecast("Челябинск")
+  const state = useForecast("Челябинск");
+
+  useEffect(() => {
+    getCoords()
+    .then((value) => {
+      getWeatherByCoords(value)
+      .then(console.log)
+    })
+  }, [])
 
   switch (state.status) {
-    case 'loading': return <Text>Loading...</Text>
-    case 'notFound': return <Text>City wasn't found</Text>
-    case'error': return <Text>{state.message}</Text>
+    case "loading":
+      return <Text>Loading...</Text>;
+    case "notFound":
+      return <Text>City wasn't found</Text>;
+    case "error":
+      return <Text>{state.message}</Text>;
   }
 
   return (

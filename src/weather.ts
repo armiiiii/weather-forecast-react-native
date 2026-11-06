@@ -1,3 +1,5 @@
+import { Coords } from './location';
+
 export type OwmCondition = {
   id: number;            // condition code (500 = light rain, 800 = clear, 80x = clouds)
   main: string;          // "Rain", "Clouds", "Clear" (always English)
@@ -58,7 +60,6 @@ export type OwmForecastResponse = {
   };
 };
 
-
 export async function getWeatherByCity(city: string): Promise<OwmForecastResponse | null> {
   const record = {
     q: city,
@@ -78,7 +79,33 @@ export async function getWeatherByCity(city: string): Promise<OwmForecastRespons
   }
 
   if (!response.ok) {
-    console.log(response)
+    throw new Error("Server didn't respond correctly or didn't respond at all.")
+  }
+  
+  return await response.json() as OwmForecastResponse
+}
+
+export async function getWeatherByCoords(coords: Coords): Promise<OwmForecastResponse | null> {
+  const record = {
+    lat: coords.latitude,
+    lon: coords.longitude,
+    lang: 'ru',
+    appid: process.env.EXPO_PUBLIC_API_KEY,
+    units: 'metric'
+  } as Record<string, any>
+
+  const params = new URLSearchParams(record)
+
+  const url = `https://api.openweathermap.org/data/2.5/forecast?${params}`
+
+  const response = await fetch(url)
+
+  if (response.status === 404) {
+    // OK to response with null if nothing was found
+    return null 
+  }
+
+  if (!response.ok) {
     throw new Error("Server didn't respond correctly or didn't respond at all.")
   }
   
