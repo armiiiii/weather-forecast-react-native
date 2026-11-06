@@ -17,7 +17,7 @@ export function today() {
   const date = (new Date()).getDate()
   const month = MONTHS[(new Date()).getMonth()]
 
-  return `${weekday.toUpperCase()}, ${date+1} ${month.toUpperCase()}`
+  return `${weekday.toUpperCase()}, ${date} ${month.toUpperCase()}`
 } 
 
 export function convertTemp(value: number, unit: "C" | "F") {
